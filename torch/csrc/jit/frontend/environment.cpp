@@ -1,5 +1,8 @@
 #include <torch/csrc/jit/frontend/environment.h>
 
+#include <torch/csrc/jit/frontend/schema_emitter.h>
+
+
 namespace torch {
 namespace jit {
 
@@ -137,7 +140,7 @@ void Environment::setSugaredVar(
     }
 
     auto parent_type = unshapedType(simple_parent->type());
-    as_simple_value = tryConvertToType(
+    as_simple_value = tryConvertToTypeAndPrepareGraph(
         loc,
         *b->owningGraph(),
         parent_type,

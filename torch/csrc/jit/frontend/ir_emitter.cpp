@@ -11,6 +11,7 @@
 #include <torch/csrc/jit/frontend/error_report.h>
 #include <torch/csrc/jit/frontend/lexer.h>
 #include <torch/csrc/jit/frontend/resolver.h>
+#include <torch/csrc/jit/frontend/schema_emitter.h>
 #include <torch/csrc/jit/frontend/schema_matching.h>
 #include <torch/csrc/jit/frontend/sugared_value.h>
 #include <torch/csrc/jit/frontend/tree_views.h>
@@ -413,7 +414,7 @@ void to_ir::emitReturn(const Return& stmt) {
     // cause a None to be converted to a tensor.
     if (!(result_type->isSubtypeOf(TensorType::get()) &&
           result->type()->isSubtypeOf(NoneType::get()))) {
-      result = tryConvertToType(
+      result = tryConvertToTypeAndPrepareGraph(
           stmt.range(),
           *graph,
           result_type,
@@ -1882,7 +1883,7 @@ std::shared_ptr<SugaredValue> to_ir::emitApplySpecialForm(
     case prim::annotate: {
       checkApplyNumInputs(apply, 2);
       TypePtr type = typeParser_.parseTypeFromExpr(apply.inputs()[0]);
-      Value* expr = tryConvertToType(
+      Value* expr = tryConvertToTypeAndPrepareGraph(
           apply.range(),
           *graph,
           type,
@@ -2492,7 +2493,7 @@ std::shared_ptr<SugaredValue> to_ir::emitRpcExpr(
     // rpc_op(to, user_callable, arg_0, arg_1, kwarg_0="foo",
     // kwarg_1="bar")
   }
-  matchSchema(functionSchema, loc, *graphPtr, args, kwargs);
+  matchSchemaAndPrepareGraph(functionSchema, loc, *graphPtr, args, kwargs);
 
   // Graph insert the QualifiedName as an constant input IR Value.
   const auto& qualname = callablePtr->qualname();
