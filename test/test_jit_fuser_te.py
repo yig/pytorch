@@ -1827,6 +1827,17 @@ class TestTEFuser(JitTestCase):
                 zs = [torch.ones(i) for i in range(N)]
                 repro(xs, ys, zs)
 
+    def test_scalar_only_inputs(self):
+        def eager(c):
+            a = torch.ones(1)
+            b = 2.0
+            if torch.all(c == 0.0):
+                b = 1.0
+            return a * b + 3.0
+
+        c = torch.ones(1)
+        script = self.checkScript(eager, c)
+
 
 works_list = [
     '__radd__',
