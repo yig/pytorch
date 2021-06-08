@@ -464,6 +464,7 @@ for method_name, method in inspect.getmembers(PyRRef):
     """
     docstring = getattr(method, "__doc__", None)
     assert docstring is not None, "RRef user-facing methods should all have docstrings."
+    if docstring is None: continue
 
     # Do surgery on pybind11 generated docstrings.
     docstring = docstring.replace("torch.distributed.rpc.PyRRef", "torch.distributed.rpc.RRef")
